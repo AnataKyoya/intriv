@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "../lib/supabase";
 
-const COLS = "nim,nama,prodi,cluster,photo_url";
+const COLS = "nim,nama,prodi,cluster,kelompok,tema,photo_url";
 
 // Kecilkan foto di browser (maks 1024px, JPEG) supaya upload cepat & hemat storage
 async function compress(file, max = 1024, quality = 0.82) {
@@ -103,7 +103,7 @@ export default function Home() {
       <main className="detail">
         <button className="back" onClick={() => setSelected(null)}>‹ Kembali ke pencarian</button>
         <h2>{selected.nama}</h2>
-        <p className="info">{selected.nim} · {selected.prodi}<br />Cluster {selected.cluster}</p>
+        <p className="info">{selected.nim} · {selected.prodi}<br />{selected.kelompok} · {selected.tema}</p>
         {shown
           ? <img className="preview" src={shown} alt={`Foto ${selected.nama}`} />
           : <div className="preview">Belum ada foto</div>}
@@ -138,8 +138,8 @@ export default function Home() {
       <div className="stat" aria-live="polite">
         <p className="stat-total"><strong>{done.length}</strong> dari {grandTotal ?? "…"} peserta sudah difoto</p>
         {prodiRows.map((r) => (
-          <div key={r.name} className="prodi" style="display: flex; flex-direction: column;">
-            <div className="stat-top" style="display: flex; flex-direction: column;">
+          <div key={r.name} className="prodi">
+            <div className="stat-top">
               <span className="prodi-name">{r.name}</span>
               <span className="small">{r.n}/{r.total} · {r.pct}%</span>
             </div>
@@ -163,7 +163,7 @@ export default function Home() {
                 : <span className="thumb">{p.nama[0]}</span>}
               <span className="meta">
                 <span className="name">{p.nama}</span><br />
-                <span className="small">{p.nim} · Cluster {p.cluster}</span>
+                <span className="small">{p.nim} · {p.kelompok}</span>
               </span>
               <span className={`tag ${p.photo_url ? "ok" : "no"}`}>{p.photo_url ? "Ada foto" : "Belum"}</span>
             </button>
