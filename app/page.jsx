@@ -163,7 +163,7 @@ export default function Home() {
                 : <span className="thumb">{p.nama[0]}</span>}
               <span className="meta">
                 <span className="name">{p.nama}</span><br />
-                <span className="small">{p.nim} · {p.kelompok}</span>
+                <span className="small">{p.nim} · {p.cluster}</span>
               </span>
               <span className={`tag ${p.photo_url ? "ok" : "no"}`}>{p.photo_url ? "Ada foto" : "Belum"}</span>
             </button>
