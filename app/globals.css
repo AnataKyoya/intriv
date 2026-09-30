@@ -27,3 +27,13 @@ button.primary{grid-column:1/-1;background:var(--accent);color:var(--accent-ink)
 button:disabled{opacity:.55;cursor:default}
 input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
 .msg{margin-top:12px;font-weight:600}.msg.err{color:#c0392b}.msg.good{color:var(--ok)}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:14px}
+.stat-top{display:flex;justify-content:space-between;gap:8px;margin-bottom:8px}
+.bar{height:8px;border-radius:99px;background:var(--line);overflow:hidden}
+.bar-fill{height:100%;background:var(--accent);border-radius:99px;transition:width .4s}
+h2.section{font-size:1rem;margin:20px 0 0}
+@media (prefers-reduced-motion:reduce){.bar-fill{transition:none}}
+.stat-total{margin:0 0 10px}
+.prodi+.prodi{margin-top:10px}
+.prodi-name{font-weight:600;font-size:.92rem}
+.stat-top{margin-bottom:6px}
