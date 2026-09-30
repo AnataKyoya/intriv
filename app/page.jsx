@@ -138,8 +138,8 @@ export default function Home() {
       <div className="stat" aria-live="polite">
         <p className="stat-total"><strong>{done.length}</strong> dari {grandTotal ?? "…"} peserta sudah difoto</p>
         {prodiRows.map((r) => (
-          <div key={r.name} className="prodi">
-            <div className="stat-top">
+          <div key={r.name} className="prodi" style="display: flex; flex-direction: column;">
+            <div className="stat-top" style="display: flex; flex-direction: column;">
               <span className="prodi-name">{r.name}</span>
               <span className="small">{r.n}/{r.total} · {r.pct}%</span>
             </div>
