@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "../lib/supabase";
 
-const COLS = "nim,nama,prodi,cluster,kelompok,tema,photo_url";
+const COLS = "nim,nama,prodi,cluster,photo_url";
 
 // Kecilkan foto di browser (maks 1024px, JPEG) supaya upload cepat & hemat storage
 async function compress(file, max = 1024, quality = 0.82) {
