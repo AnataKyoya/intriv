@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "../lib/supabase";
 
-const COLS = "nim,nama,prodi,cluster,kelompok,tema,photo_url";
+const COLS = "nim,nama,prodi,cluster,photo_url";
 
 // Kecilkan foto di browser (maks 1024px, JPEG) supaya upload cepat & hemat storage
 async function compress(file, max = 1024, quality = 0.82) {
@@ -24,7 +24,26 @@ export default function Home() {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState(null);
+  const [done, setDone] = useState([]);
+  const [totals, setTotals] = useState(null); // { "TEKNIK INFORMATIKA": 249, ... }
   const seq = useRef(0);
+
+  // Statistik depan: total peserta + daftar yang sudah punya foto (terbaru di atas)
+  useEffect(() => {
+    (async () => {
+      const [all, withPhoto] = await Promise.all([
+        supabase.from("participants").select("prodi").limit(5000),
+        supabase.from("participants").select(COLS).not("photo_url", "is", null)
+          .order("photo_updated_at", { ascending: false }),
+      ]);
+      if (all.data) {
+        const t = {};
+        for (const r of all.data) t[r.prodi] = (t[r.prodi] || 0) + 1;
+        setTotals(t);
+      }
+      if (withPhoto.data) setDone(withPhoto.data);
+    })();
+  }, []);
 
   // Cari (debounce 250 ms): nama atau NIM, tidak sensitif huruf besar/kecil
   useEffect(() => {
@@ -70,6 +89,7 @@ export default function Home() {
       const next = { ...selected, photo_url: url };
       setSelected(next);
       setResults((r) => r.map((x) => (x.nim === next.nim ? next : x)));
+      setDone((d) => [next, ...d.filter((x) => x.nim !== next.nim)]);
       setFile(null); setPreviewUrl(null);
       setMsg({ ok: true, t: "Foto tersimpan." });
     } catch (e) {
@@ -83,7 +103,7 @@ export default function Home() {
       <main className="detail">
         <button className="back" onClick={() => setSelected(null)}>‹ Kembali ke pencarian</button>
         <h2>{selected.nama}</h2>
-        <p className="info">{selected.nim} · {selected.prodi}<br />{selected.kelompok} · {selected.tema}</p>
+        <p className="info">{selected.nim} · {selected.prodi}<br />Cluster {selected.cluster}</p>
         {shown
           ? <img className="preview" src={shown} alt={`Foto ${selected.nama}`} />
           : <div className="preview">Belum ada foto</div>}
@@ -101,23 +121,49 @@ export default function Home() {
     );
   }
 
+  const searching = q.trim().length >= 2;
+  const list = searching ? results : done;
+  const grandTotal = totals ? Object.values(totals).reduce((a, b) => a + b, 0) : null;
+  const prodiRows = totals
+    ? Object.keys(totals).sort().map((name) => {
+        const n = done.filter((d) => d.prodi === name).length;
+        return { name, n, total: totals[name], pct: Math.round((n / totals[name]) * 100) };
+      })
+    : [];
+
   return (
     <main>
       <h1>Foto peserta Intrivia</h1>
       <p className="sub">Ketik nama atau NIM, lalu pilih peserta untuk memotret atau mengunggah foto.</p>
+      <div className="stat" aria-live="polite">
+        <p className="stat-total"><strong>{done.length}</strong> dari {grandTotal ?? "…"} peserta sudah difoto</p>
+        {prodiRows.map((r) => (
+          <div key={r.name} className="prodi">
+            <div className="stat-top">
+              <span className="prodi-name">{r.name}</span>
+              <span className="small">{r.n}/{r.total} · {r.pct}%</span>
+            </div>
+            <div className="bar" role="progressbar" aria-label={`Progres foto ${r.name}`} aria-valuenow={r.pct} aria-valuemin={0} aria-valuemax={100}>
+              <div className="bar-fill" style={{ width: `${r.pct}%` }} />
+            </div>
+          </div>
+        ))}
+      </div>
       <input className="search" type="search" placeholder="Cari nama atau NIM" value={q}
         onChange={(e) => setQ(e.target.value)} autoFocus aria-label="Cari nama atau NIM" />
-      {q.trim().length >= 2 && !loading && results.length === 0 && <p className="empty">Tidak ada peserta dengan kata itu. Coba sebagian nama saja.</p>}
+      {searching && !loading && results.length === 0 && <p className="empty">Tidak ada peserta dengan kata itu. Coba sebagian nama saja.</p>}
+      {!searching && <h2 className="section">Sudah difoto ({done.length})</h2>}
+      {!searching && done.length === 0 && <p className="empty">Belum ada foto. Cari nama peserta untuk mulai.</p>}
       <ul className="list">
-        {results.map((p) => (
+        {list.map((p) => (
           <li key={p.nim}>
             <button className="row" onClick={() => pick(p)}>
               {p.photo_url
-                ? <img className="thumb" src={p.photo_url} alt="" />
+                ? <img className="thumb" src={p.photo_url} alt="" loading="lazy" />
                 : <span className="thumb">{p.nama[0]}</span>}
               <span className="meta">
                 <span className="name">{p.nama}</span><br />
-                <span className="small">{p.nim} · {p.kelompok}</span>
+                <span className="small">{p.nim} · Cluster {p.cluster}</span>
               </span>
               <span className={`tag ${p.photo_url ? "ok" : "no"}`}>{p.photo_url ? "Ada foto" : "Belum"}</span>
             </button>
