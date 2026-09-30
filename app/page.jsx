@@ -103,7 +103,7 @@ export default function Home() {
       <main className="detail">
         <button className="back" onClick={() => setSelected(null)}>‹ Kembali ke pencarian</button>
         <h2>{selected.nama}</h2>
-        <p className="info">{selected.nim} · {selected.prodi}<br />{selected.kelompok} · {selected.tema}</p>
+        <p className="info">{selected.nim} · {selected.prodi}<br />{selected.cluster} · {selected.tema}</p>
         {shown
           ? <img className="preview" src={shown} alt={`Foto ${selected.nama}`} />
           : <div className="preview">Belum ada foto</div>}
