@@ -272,3 +272,18 @@ h2.section {
 	font-weight: 600;
 	cursor: pointer;
 }
+.export-row {
+	display: flex;
+	gap: 8px;
+	margin-top: 12px;
+}
+.export-select {
+	flex: 1;
+	min-width: 0;
+	padding: 10px;
+	border-radius: 10px;
+	border: 1.5px solid var(--line);
+	background: var(--card);
+	color: var(--ink);
+	font: inherit;
+}

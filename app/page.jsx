@@ -40,6 +40,7 @@ export default function Home() {
 	const [done, setDone] = useState([]);
 	const [totals, setTotals] = useState(null); // { "TEKNIK INFORMATIKA": 249, ... }
 	const [exporting, setExporting] = useState(false);
+	const [exportProdi, setExportProdi] = useState("all");
 	const seq = useRef(0);
 
 	// Statistik depan: total peserta + daftar yang sudah punya foto (terbaru di atas)
@@ -201,9 +202,11 @@ export default function Home() {
 	async function exportCsv() {
 		setExporting(true);
 		try {
-			const { data, error } = await supabase
+			let query = supabase
 				.from("participants")
-				.select("nim,nama,prodi,cluster,photo_url,photo_updated_at")
+				.select("nim,nama,prodi,cluster,photo_url,photo_updated_at");
+			if (exportProdi !== "all") query = query.eq("prodi", exportProdi);
+			const { data, error } = await query
 				.order("cluster")
 				.order("nama")
 				.limit(5000);
@@ -237,7 +240,11 @@ export default function Home() {
 			);
 			const a = document.createElement("a");
 			a.href = url;
-			a.download = `peserta-intrivia-${new Date().toISOString().slice(0, 10)}.csv`;
+			const tag =
+				exportProdi === "all"
+					? "semua"
+					: exportProdi.toLowerCase().replace(/\s+/g, "-");
+			a.download = `peserta-intrivia-${tag}-${new Date().toISOString().slice(0, 10)}.csv`;
 			document.body.appendChild(a);
 			a.click();
 			a.remove();
@@ -303,13 +310,33 @@ export default function Home() {
 						</div>
 					</div>
 				))}
-				<button
-					className="export"
-					onClick={exportCsv}
-					disabled={exporting}
-				>
-					{exporting ? "Menyiapkan…" : "Ekspor CSV"}
-				</button>
+				<div className="export-row">
+					<select
+						className="export-select"
+						value={exportProdi}
+						onChange={(e) => setExportProdi(e.target.value)}
+						aria-label="Prodi yang diekspor"
+					>
+						<option value="all">
+							Semua prodi
+							{grandTotal != null ? ` (${grandTotal})` : ""}
+						</option>
+						{Object.keys(totals || {})
+							.sort()
+							.map((name) => (
+								<option key={name} value={name}>
+									{name} ({totals[name]})
+								</option>
+							))}
+					</select>
+					<button
+						className="export"
+						onClick={exportCsv}
+						disabled={exporting}
+					>
+						{exporting ? "Menyiapkan…" : "Ekspor CSV"}
+					</button>
+				</div>
 			</div>
 			<input
 				className="search"
