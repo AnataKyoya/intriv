@@ -23,6 +23,11 @@ async function compress(file, max = 1024, quality = 0.82) {
 	);
 }
 
+function csvCell(v) {
+	const t = v == null ? "" : String(v);
+	return /[",\n\r]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t;
+}
+
 export default function Home() {
 	const [q, setQ] = useState("");
 	const [results, setResults] = useState([]);
@@ -34,6 +39,7 @@ export default function Home() {
 	const [msg, setMsg] = useState(null);
 	const [done, setDone] = useState([]);
 	const [totals, setTotals] = useState(null); // { "TEKNIK INFORMATIKA": 249, ... }
+	const [exporting, setExporting] = useState(false);
 	const seq = useRef(0);
 
 	// Statistik depan: total peserta + daftar yang sudah punya foto (terbaru di atas)
@@ -150,7 +156,7 @@ export default function Home() {
 				<p className="info">
 					{selected.nim} · {selected.prodi}
 					<br />
-					{selected.cluster} · {selected.tema}
+					Cluster {selected.cluster}
 				</p>
 				{shown ? (
 					<img
@@ -345,7 +351,7 @@ export default function Home() {
 								<span className="name">{p.nama}</span>
 								<br />
 								<span className="small">
-									{p.nim} · {p.cluster}
+									{p.nim} · Cluster {p.cluster}
 								</span>
 							</span>
 							<span
